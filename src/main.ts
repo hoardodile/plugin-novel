@@ -4,6 +4,7 @@ import {
 	type ResourceAPI,
 } from "@hoardodile/sdk-server"
 import { naturalSort } from "@hoardodile/sdk-server/helpers"
+import { SEARCH_META_VERSION } from "@hoardodile/sdk-types/resource"
 import { decodeText } from "./core/charset"
 import {
 	epubContainerOpfPath,
@@ -13,11 +14,17 @@ import {
 } from "./core/epub"
 import { classifySource, type NovelSourceShape } from "./core/format"
 import { docxMetadata, fb2Metadata, fb2ToUnits } from "./core/text"
-import type { NovelFile, NovelSchema, NovelSourceMeta } from "./shared"
+import type {
+	NovelFile,
+	NovelSchema,
+	NovelSearchMeta,
+	NovelSourceMeta,
+} from "./shared"
 
 export default definePlugin<NovelSchema>({
 	detect,
 	sourceMeta,
+	searchMeta,
 	listFiles,
 })
 
@@ -247,6 +254,29 @@ async function docxSourceMeta(
 	const { title, author } = docxMetadata(raw)
 	if (title === undefined && author === undefined) return undefined
 	return { title, author }
+}
+
+/**
+ * Format facets computed once at import time from the source shape —
+ * the categories the manifest's `ui.search.kinds` partition on. All
+ * four keys are always present so the facet bag is stable; `plain`
+ * covers every single-file text/html source and chapter folders.
+ */
+async function searchMeta(
+	api: ResourceAPI,
+): Promise<NovelSearchMeta | undefined> {
+	const shape = await shapeOf(api)
+	if (shape === undefined) return undefined
+	const facets =
+		shape.kind === "folder"
+			? { epub: false, fb2: false, docx: false, plain: true }
+			: {
+					epub: shape.format === "epub",
+					fb2: shape.format === "fb2" || shape.format === "fb2z",
+					docx: shape.format === "docx",
+					plain: shape.format === "text" || shape.format === "html",
+			  }
+	return { v: SEARCH_META_VERSION, facets }
 }
 
 /** Read a whole entry as UTF-8 text; `undefined` on read failure. */

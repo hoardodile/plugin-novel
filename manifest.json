@@ -2,32 +2,105 @@
 	"id": "b3bfba9e-b14b-42b1-8bf9-147251317dc0",
 	"name": "Novel",
 	"description": "Novel reader.",
-	"version": "0.1.0",
+	"version": "0.1.1",
+	"minAppVersion": "0.1.1",
 	"icon": "book",
 	"permissions": {
 		"sourceMeta": true,
+		"searchMeta": true,
 		"message": true,
 		"container": true
 	},
 	"i18n": {
 		"name": {
 			"en": "Novel",
-			"zh": "小说"
+			"zh": "小说",
+			"ja": "小説",
+			"de": "Roman",
+			"es": "Novela"
 		},
 		"description": {
 			"en": "Novel reader.",
-			"zh": "小说阅读器。"
+			"zh": "小说阅读器。",
+			"ja": "小説リーダー。",
+			"de": "Roman-Reader.",
+			"es": "Lector de novelas."
 		},
 		"anchorPrefix": {
 			"en": "Para ",
-			"zh": "第"
+			"zh": "第",
+			"ja": "第",
+			"de": "Abs. ",
+			"es": "Párr. "
 		},
 		"anchorSuffix": {
 			"en": "",
-			"zh": "段"
+			"zh": "段",
+			"ja": "段落",
+			"de": "",
+			"es": ""
+		},
+		"epubKindLabel": {
+			"en": "EPUB",
+			"zh": "EPUB",
+			"ja": "EPUB",
+			"de": "EPUB",
+			"es": "EPUB"
+		},
+		"fb2KindLabel": {
+			"en": "FB2",
+			"zh": "FB2",
+			"ja": "FB2",
+			"de": "FB2",
+			"es": "FB2"
+		},
+		"docxKindLabel": {
+			"en": "DOCX",
+			"zh": "DOCX",
+			"ja": "DOCX",
+			"de": "DOCX",
+			"es": "DOCX"
+		},
+		"plainKindLabel": {
+			"en": "Plain text",
+			"zh": "纯文本",
+			"ja": "プレーンテキスト",
+			"de": "Reiner Text",
+			"es": "Texto plano"
 		}
 	},
 	"ui": {
+		"card": {
+			"default": {
+				"bl": [
+					"{{if(gt(file.count, 1), join(' ', searchKindIcons(), number(file.count)), searchKindIcons())}}"
+				]
+			}
+		},
+		"search": {
+			"kinds": [
+				{
+					"key": "epub",
+					"label": "{{t('epubKindLabel')}}",
+					"icon": "{{icon('Book')}}"
+				},
+				{
+					"key": "fb2",
+					"label": "{{t('fb2KindLabel')}}",
+					"icon": "{{icon('FileText')}}"
+				},
+				{
+					"key": "docx",
+					"label": "{{t('docxKindLabel')}}",
+					"icon": "{{icon('Document')}}"
+				},
+				{
+					"key": "plain",
+					"label": "{{t('plainKindLabel')}}",
+					"icon": "{{icon('TextField')}}"
+				}
+			]
+		},
 		"message": {
 			"anchor": "{{t('anchorPrefix')}}{{inc(data.paragraphIndex)}}{{t('anchorSuffix')}}"
 		}

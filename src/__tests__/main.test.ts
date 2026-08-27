@@ -2,6 +2,7 @@
 
 import type { FileType } from "@hoardodile/sdk-server"
 import { createResourceAPIFixture } from "@hoardodile/sdk-server"
+import { SEARCH_META_VERSION } from "@hoardodile/sdk-types/resource"
 import { describe, expect, it } from "vitest"
 import plugin from "../main.ts"
 import type { NovelSchema } from "../shared"
@@ -244,5 +245,71 @@ describe("novel sourceMeta", () => {
 			files: ["novel.txt"],
 		})
 		expect(await plugin.sourceMeta?.(fixture.api)).toBeUndefined()
+	})
+})
+
+describe("novel searchMeta", () => {
+	it("marks an epub resource with the epub facet", async () => {
+		const meta = await plugin.searchMeta?.(epubFixture().api)
+		expect(meta).toEqual({
+			v: SEARCH_META_VERSION,
+			facets: { epub: true, fb2: false, docx: false, plain: false },
+		})
+	})
+
+	it("marks fb2 and fb2.zip containers with the fb2 facet", async () => {
+		const plain = createResourceAPIFixture<NovelSchema>({ files: ["book.fb2"] })
+		expect(await plugin.searchMeta?.(plain.api)).toEqual({
+			v: SEARCH_META_VERSION,
+			facets: { epub: false, fb2: true, docx: false, plain: false },
+		})
+
+		const zipped = createResourceAPIFixture<NovelSchema>({
+			files: ["book.fb2.zip"],
+			containerListings: {
+				"book.fb2.zip": {
+					entries: [{ path: "book.fb2", sizeBytes: 10, kind: "other" }],
+				},
+			},
+		})
+		expect(await plugin.searchMeta?.(zipped.api)).toEqual({
+			v: SEARCH_META_VERSION,
+			facets: { epub: false, fb2: true, docx: false, plain: false },
+		})
+	})
+
+	it("marks text, html and chapter folders with the plain facet", async () => {
+		for (const name of ["novel.txt", "notes.md", "chapter.html"]) {
+			const fixture = createResourceAPIFixture<NovelSchema>({ files: [name] })
+			expect(await plugin.searchMeta?.(fixture.api)).toEqual({
+				v: SEARCH_META_VERSION,
+				facets: { epub: false, fb2: false, docx: false, plain: true },
+			})
+		}
+		const folder = createResourceAPIFixture<NovelSchema>({
+			files: ["卷一.txt", "卷二.txt", "ch3.html"],
+		})
+		expect(await plugin.searchMeta?.(folder.api)).toEqual({
+			v: SEARCH_META_VERSION,
+			facets: { epub: false, fb2: false, docx: false, plain: true },
+		})
+	})
+
+	it("marks a docx resource with the docx facet", async () => {
+		const fixture = createResourceAPIFixture<NovelSchema>({
+			files: ["book.docx"],
+			types: { "book.docx": DOCX_TYPE },
+		})
+		expect(await plugin.searchMeta?.(fixture.api)).toEqual({
+			v: SEARCH_META_VERSION,
+			facets: { epub: false, fb2: false, docx: true, plain: false },
+		})
+	})
+
+	it("returns undefined for unclassifiable resources", async () => {
+		const fixture = createResourceAPIFixture<NovelSchema>({
+			files: ["photo.jpg"],
+		})
+		expect(await plugin.searchMeta?.(fixture.api)).toBeUndefined()
 	})
 })

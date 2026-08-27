@@ -21,7 +21,12 @@ export interface NovelSourceMeta {
 
 export interface NovelSearchMeta {
 	readonly v: number
-	readonly facets?: Readonly<Record<string, boolean>>
+	readonly facets?: {
+		readonly epub?: boolean
+		readonly fb2?: boolean
+		readonly docx?: boolean
+		readonly plain?: boolean
+	}
 }
 
 export interface NovelSchema extends PluginSchema {
