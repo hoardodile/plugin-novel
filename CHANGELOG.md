@@ -1,0 +1,7 @@
+# Changelog
+
+## [0.1.2](https://github.com/hoardodile/plugin-novel/compare/v0.1.1...v0.1.2) (2026-08-29)
+
+### Features
+
+* align with hoardodile 0.1.3 — release-it one-click publish, SDK ^0.1.3 (v0.1.2) ([8e5c810](https://github.com/hoardodile/plugin-novel/commit/8e5c8101c71adad65371f8214e18c4ed886423bd))
