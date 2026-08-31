@@ -13,6 +13,7 @@
 		"detect:smoke": "hoardodile plugin run detect testdata/text --plugin-dir dist",
 		"lint": "tsc --noEmit",
 		"test": "vitest run",
+		"readme:check": "node scripts/check-readme.mjs",
 		"release": "node scripts/release.mjs"
 	},
 	"release-it": {
@@ -41,20 +42,20 @@
 		}
 	},
 	"dependencies": {
-		"@hoardodile/sdk-react": "^0.1.5",
-		"@hoardodile/sdk-server": "^0.1.5",
-		"@hoardodile/sdk-types": "^0.1.5",
-		"@hoardodile/sdk-web": "^0.1.5",
-		"@hoardodile/ui": "^0.1.5",
+		"@hoardodile/sdk-react": "^0.1.6",
+		"@hoardodile/sdk-server": "^0.1.6",
+		"@hoardodile/sdk-types": "^0.1.6",
+		"@hoardodile/sdk-web": "^0.1.6",
+		"@hoardodile/ui": "^0.1.6",
 		"@solar-icons/react": "^2.1.0",
 		"react": "^19.2.8",
 		"react-dom": "^19.2.8"
 	},
 	"devDependencies": {
-		"@hoardodile/cli": "^0.1.5",
-		"@hoardodile/host": "^0.1.5",
-		"@hoardodile/host-web": "^0.1.5",
-		"@hoardodile/workbench": "^0.1.5",
+		"@hoardodile/cli": "^0.1.6",
+		"@hoardodile/host": "^0.1.6",
+		"@hoardodile/host-web": "^0.1.6",
+		"@hoardodile/workbench": "^0.1.6",
 		"@tailwindcss/vite": "^4.3.3",
 		"@testing-library/jest-dom": "^7.0.0",
 		"@testing-library/react": "^16.3.2",
