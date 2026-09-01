@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.6](https://github.com/hoardodile/plugin-novel/compare/v0.1.5...v0.1.6) (2026-09-01)
+
+### Features
+
+* align to hoardodile 0.1.9 (SDK ^0.1.9) ([7c9388a](https://github.com/hoardodile/plugin-novel/commit/7c9388abca3ef8a3d51848d5d35f8244185d7d18))
+
 ## [0.1.5](https://github.com/hoardodile/plugin-novel/compare/v0.1.4...v0.1.5) (2026-09-01)
 
 ### Features
