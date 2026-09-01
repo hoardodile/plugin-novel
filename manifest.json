@@ -3,7 +3,7 @@
 	"name": "Novel",
 	"description": "Novel reader.",
 	"version": "0.1.4",
-	"minAppVersion": "0.1.6",
+	"minAppVersion": "0.1.8",
 	"icon": "book",
 	"permissions": {
 		"sourceMeta": true,

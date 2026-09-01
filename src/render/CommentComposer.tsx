@@ -5,8 +5,8 @@ import { Icon } from "@hoardodile/ui/components/icon"
 import { Textarea } from "@hoardodile/ui/components/textarea"
 import type { ReactNode } from "react"
 import { useState } from "react"
-import { Plane } from "../icons"
 import { useTranslation } from "../i18n"
+import { Plane } from "../icons"
 
 export type CommentComposerProps = {
 	/**

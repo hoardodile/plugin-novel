@@ -275,7 +275,7 @@ async function searchMeta(
 					fb2: shape.format === "fb2" || shape.format === "fb2z",
 					docx: shape.format === "docx",
 					plain: shape.format === "text" || shape.format === "html",
-			  }
+				}
 	return { v: SEARCH_META_VERSION, facets }
 }
 
