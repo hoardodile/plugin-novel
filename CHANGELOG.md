@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.5](https://github.com/hoardodile/plugin-novel/compare/v0.1.4...v0.1.5) (2026-09-01)
+
+### Features
+
+* align to hoardodile 0.1.8 (SDK ^0.1.8) and the 0.1.8 plugin template ([edad7b7](https://github.com/hoardodile/plugin-novel/commit/edad7b74ce3743f09e940bbc8ff708714a2bca72))
+
 ## [0.1.4](https://github.com/hoardodile/plugin-novel/compare/v0.1.3...v0.1.4) (2026-08-31)
 
 ### Bug Fixes
