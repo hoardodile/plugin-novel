@@ -8,12 +8,12 @@ import type { CSSProperties } from "react"
  */
 
 /**
- * Bottom padding (px) reserved inside each column. Roughly matches the
- * top padding so pages feel symmetric while still leaving a small
- * gutter for the comment badge to overflow into when a paragraph splits
- * across pages.
+ * Top/bottom padding (px) inside each column. Zero — the real top/bottom
+ * strips already hold the chapter/page/time corners, so the reading text
+ * runs edge-to-edge vertically (no extra breathing room).
  */
-const COLUMN_BOTTOM_PADDING = 24
+const COLUMN_TOP_PADDING = 0
+const COLUMN_BOTTOM_PADDING = 0
 /**
  * Horizontal inset (px) reserved on each side of every page. Applied as
  * half-padding-inline / half-column-gap so one column occupies exactly
@@ -21,11 +21,13 @@ const COLUMN_BOTTOM_PADDING = 24
  * visible text stays centred with consistent gutters.
  */
 const COLUMN_SIDE_PADDING = 32
-/**
- * Top padding (px) inside each column. Mirrors the bottom padding so
- * the first and last lines sit at comparable distances from the edges.
- */
-const COLUMN_TOP_PADDING = 24
+
+// Compact (below-md / phone): a bit more side margin for a comfortable
+// reading measure, and no top/bottom (the strips separate the corners).
+// Column-pitch math is padding-agnostic, so pagination stays correct.
+const COLUMN_COMPACT_SIDE_PADDING = 24
+const COLUMN_COMPACT_TOP_PADDING = 0
+const COLUMN_COMPACT_BOTTOM_PADDING = 0
 
 /** Where a paragraph landed in the measured column flow. */
 export type ParagraphBox = {
@@ -77,20 +79,25 @@ export type PendingChunkTarget =
  * narrower than a page, so columns and pages fall out of step and page
  * lookups round to the wrong page.)
  */
-export function columnFlowStyle(pageSize: {
-	readonly width: number
-	readonly height: number
-}): CSSProperties {
+export function columnFlowStyle(
+	pageSize: { readonly width: number; readonly height: number },
+	opts: { readonly compact?: boolean } = {},
+): CSSProperties {
+	const side = opts.compact ? COLUMN_COMPACT_SIDE_PADDING : COLUMN_SIDE_PADDING
+	const top = opts.compact ? COLUMN_COMPACT_TOP_PADDING : COLUMN_TOP_PADDING
+	const bottom = opts.compact
+		? COLUMN_COMPACT_BOTTOM_PADDING
+		: COLUMN_BOTTOM_PADDING
 	if (pageSize.width <= 0) return { height: "100%" }
 	return {
 		height: `${pageSize.height}px`,
-		columnWidth: `${Math.max(1, pageSize.width - 2 * COLUMN_SIDE_PADDING)}px`,
-		columnGap: `${2 * COLUMN_SIDE_PADDING}px`,
+		columnWidth: `${Math.max(1, pageSize.width - 2 * side)}px`,
+		columnGap: `${2 * side}px`,
 		columnFill: "auto",
-		paddingTop: `${COLUMN_TOP_PADDING}px`,
-		paddingBottom: `${COLUMN_BOTTOM_PADDING}px`,
-		paddingLeft: `${COLUMN_SIDE_PADDING}px`,
-		paddingRight: `${COLUMN_SIDE_PADDING}px`,
+		paddingTop: `${top}px`,
+		paddingBottom: `${bottom}px`,
+		paddingLeft: `${side}px`,
+		paddingRight: `${side}px`,
 		boxSizing: "border-box",
 	}
 }

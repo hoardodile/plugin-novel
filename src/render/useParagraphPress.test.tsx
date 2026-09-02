@@ -1,7 +1,7 @@
 import { render } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
 import { NovelParagraphView } from "./NovelParagraphView"
-import { resolvePressTarget } from "./useParagraphPress"
+import { resolvePressTarget, resolveTapAction } from "./useParagraphPress"
 
 function paragraphElement(pidx: number, withBadge = false): HTMLElement {
 	const p = document.createElement("p")
@@ -62,8 +62,29 @@ describe("resolvePressTarget", () => {
 	})
 })
 
+describe("resolveTapAction", () => {
+	it("keeps the left/right half split when no center action is wired", () => {
+		expect(resolveTapAction(0.1, false)).toBe("back")
+		expect(resolveTapAction(0.5, false)).toBe("forward")
+		expect(resolveTapAction(0.9, false)).toBe("forward")
+	})
+
+	it("routes the middle third to the center action when wired", () => {
+		expect(resolveTapAction(0.1, true)).toBe("back")
+		expect(resolveTapAction(0.4, true)).toBe("center")
+		expect(resolveTapAction(0.5, true)).toBe("center")
+		expect(resolveTapAction(0.65, true)).toBe("center")
+		expect(resolveTapAction(0.9, true)).toBe("forward")
+	})
+})
+
 describe("NovelParagraphView badge", () => {
-	const baseStyle = { fontSize: "18px", lineHeight: 1.8, letterSpacing: "0em" }
+	const baseStyle = {
+		fontFamily: "var(--font-doc)",
+		fontSize: "18px",
+		lineHeight: 1.8,
+		letterSpacing: "0em",
+	}
 
 	it("marks the comment badge so presses on it open the thread", () => {
 		const { container } = render(

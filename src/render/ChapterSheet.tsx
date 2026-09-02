@@ -1,15 +1,21 @@
+import { ScrollArea } from "@hoardodile/ui/components/scroll-area"
 import {
 	Sheet,
 	SheetContent,
+	SheetDescription,
 	SheetHeader,
 	SheetTitle,
 } from "@hoardodile/ui/components/sheet"
+import { cn } from "@hoardodile/ui/lib/utils"
 import type { NovelChapter } from "../core/document"
 import { useTranslation } from "../i18n"
 
 /**
- * Side sheet showing detected chapters. Clicking a row jumps to that
- * paragraph index and closes the sheet so the reader retains focus.
+ * Side sheet listing detected chapters. Clicking a row jumps to that
+ * paragraph index and closes the sheet so the reader retains focus. The
+ * current chapter is highlighted by a fill only — every row shares the
+ * same ink so the list stays readable, and the active chapter is
+ * distinguished by its accent fill.
  */
 export function NovelChapterSheet(props: {
 	readonly open: boolean
@@ -24,40 +30,48 @@ export function NovelChapterSheet(props: {
 		<Sheet open={open} onOpenChange={onOpenChange}>
 			<SheetContent
 				side="left"
-				className="w-80 sm:max-w-sm"
+				showCloseButton={false}
+				className="w-80"
 				data-testid="novel-chapter-sheet"
 			>
-				<SheetHeader>
-					<SheetTitle>{t("chapters")}</SheetTitle>
+				<SheetHeader className="pb-0">
+					<SheetTitle className="text-sm">{t("chapters")}</SheetTitle>
+					<SheetDescription className="text-xs">
+						{t("chaptersCount", { total: chapters.length })}
+					</SheetDescription>
 				</SheetHeader>
-				<div className="flex h-full flex-col gap-1 overflow-y-auto px-4 pb-6">
+				<ScrollArea className="h-full">
 					{chapters.length === 0 ? (
-						<p className="text-sm text-muted-foreground">
+						<p className="px-3 py-4 text-sm text-muted-foreground">
 							{t("chaptersEmpty")}
 						</p>
 					) : (
-						chapters.map((c) => {
-							const isActive = c.paragraphIndex <= currentParagraphIndex
-							return (
-								<button
-									type="button"
-									key={c.paragraphIndex}
-									onClick={() => {
-										onJump(c.paragraphIndex)
-										onOpenChange(false)
-									}}
-									className={`rounded px-2 py-1 text-left text-sm transition ${
-										isActive
-											? "text-foreground"
-											: "text-muted-foreground hover:text-foreground"
-									}`}
-								>
-									<span className="truncate">{c.title}</span>
-								</button>
-							)
-						})
+						<ol className="flex flex-col gap-1 px-2 pb-2">
+							{chapters.map(function renderChapter(chapter) {
+								const isActive = chapter.paragraphIndex <= currentParagraphIndex
+								return (
+									<li key={chapter.paragraphIndex}>
+										<button
+											type="button"
+											onClick={() => {
+												onJump(chapter.paragraphIndex)
+												onOpenChange(false)
+											}}
+											className={cn(
+												"flex w-full items-center rounded-lg px-3 py-2 text-left text-sm transition-colors",
+												isActive
+													? "bg-accent text-accent-foreground"
+													: "text-foreground hover:bg-accent",
+											)}
+										>
+											<span className="truncate">{chapter.title}</span>
+										</button>
+									</li>
+								)
+							})}
+						</ol>
 					)}
-				</div>
+				</ScrollArea>
 			</SheetContent>
 		</Sheet>
 	)

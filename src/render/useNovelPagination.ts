@@ -174,7 +174,7 @@ export function useNovelPagination(
 			settings.fontSize,
 			settings.lineHeight,
 			settings.letterSpacing,
-			settings.bgColor,
+			settings.fontRole,
 			paragraphs,
 			commitAnchor,
 		],

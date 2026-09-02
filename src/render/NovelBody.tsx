@@ -4,7 +4,10 @@ import type { NovelDocument } from "../core/document"
 import type { NovelSettings } from "../prefs"
 import { splitIntoChunks } from "./chunks"
 import { columnFlowStyle, type NovelScrollAnchor } from "./column-layout"
-import { NovelParagraphView } from "./NovelParagraphView"
+import {
+	NovelParagraphView,
+	novelParagraphBaseStyle,
+} from "./NovelParagraphView"
 import { useNovelPagination } from "./useNovelPagination"
 import { useParagraphPress } from "./useParagraphPress"
 
@@ -35,6 +38,10 @@ export type NovelBodyProps = {
 		current: number
 		total: number
 	}) => void
+	/** Toggle the immersive chrome (mobile). Absent keeps tap-to-page only. */
+	readonly onToggleChrome?: () => void
+	/** Compact (below-md) page insets on mobile. */
+	readonly compact?: boolean
 }
 
 export function NovelBody(props: NovelBodyProps) {
@@ -50,6 +57,8 @@ export function NovelBody(props: NovelBodyProps) {
 		scrollToPage,
 		onScrollToPageHandled,
 		onPageStatsChange,
+		onToggleChrome,
+		compact,
 	} = props
 	const containerRef = useRef<HTMLDivElement | null>(null)
 	const chunkIndex = useMemo(
@@ -70,24 +79,26 @@ export function NovelBody(props: NovelBodyProps) {
 		onScrollToPageHandled,
 	})
 
+	// Desktop paged mode doesn't page-turn by tapping — the bottom strip's
+	// prev/next buttons (and arrow keys) handle it; mobile (compact) keeps
+	// the tap-to-page-turn gestures.
 	const pressHandlers = useParagraphPress({
 		containerRef,
 		onLongPress: onParagraphLongPress,
 		onCommentBadgeTap: onParagraphCommentTap,
-		onTapBack: goPrev,
-		onTapForward: goNext,
+		onTapBack: compact ? goPrev : noop,
+		onTapForward: compact ? goNext : noop,
+		onTapCenter: onToggleChrome,
 	})
 
 	const baseParagraphStyle = useMemo(
-		() => ({
-			// Reading content speaks the doc serif (theme.css `--font-doc`;
-			// the host's font preference still cascades via `--font-app`).
-			fontFamily: "var(--font-doc)",
-			fontSize: `${settings.fontSize}px`,
-			lineHeight: settings.lineHeight,
-			letterSpacing: `${settings.letterSpacing}em`,
-		}),
-		[settings.fontSize, settings.lineHeight, settings.letterSpacing],
+		() => novelParagraphBaseStyle(settings),
+		[
+			settings.fontSize,
+			settings.lineHeight,
+			settings.letterSpacing,
+			settings.fontRole,
+		],
 	)
 
 	const activeChunk = chunkIndex.chunks[chunkIdx]
@@ -95,14 +106,17 @@ export function NovelBody(props: NovelBodyProps) {
 	return (
 		<div
 			ref={containerRef}
-			className="relative h-full w-full touch-pan-y overflow-x-hidden overflow-y-hidden select-none"
+			className={`relative h-full w-full touch-pan-y overflow-x-hidden overflow-y-hidden ${
+				compact ? "select-none" : "select-text"
+			}`}
 			data-testid="novel-body"
 			onPointerDown={pressHandlers.onPointerDown}
 			onPointerMove={pressHandlers.onPointerMove}
 			onPointerUp={pressHandlers.onPointerUp}
 			onPointerCancel={pressHandlers.onPointerCancel}
+			onContextMenu={pressHandlers.onContextMenu}
 		>
-			<div style={columnFlowStyle(pageSize)}>
+			<div style={columnFlowStyle(pageSize, { compact })}>
 				{activeChunk?.paragraphs.map(function renderParagraph(p) {
 					return (
 						<NovelParagraphView
@@ -116,4 +130,8 @@ export function NovelBody(props: NovelBodyProps) {
 			</div>
 		</div>
 	)
+}
+
+function noop() {
+	// Desktop paged mode taps are inert — paging uses the bottom strip.
 }

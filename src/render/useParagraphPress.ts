@@ -1,14 +1,21 @@
 import { useCallback, useRef } from "react"
 
 /**
- * Press gestures over the novel text. Three outcomes share one press:
- * a long press opens the paragraph's comment dialog, a tap on a comment
- * badge opens that paragraph's thread, and a plain tap turns the page
- * (left half back, right half forward). A drag cancels all of them.
+ * Press gestures over the novel text. On touch/pen a long press opens the
+ * paragraph's comment dialog during the hold; on mouse the same dialog is
+ * opened by right-click (`onContextMenu`), so left-drag text selection and
+ * left-tap paging are unaffected. A tap on a comment badge opens that
+ * paragraph's thread, a plain tap turns the page (left/right or centre
+ * toggle), and a drag cancels everything.
  */
 
 const LONG_PRESS_MS = 450
 const TAP_MOVE_TOLERANCE_PX = 8
+// Horizontal tap zones (as fractions of the container width) when a
+// center action is wired: the middle band toggles the chrome, the
+// outer bands page back/forward (paged) or do nothing (scroll).
+const CENTER_ZONE_START = 0.3
+const CENTER_ZONE_END = 0.7
 
 type PressTracker = {
 	readonly x: number
@@ -24,6 +31,7 @@ export type ParagraphPressHandlers = {
 	readonly onPointerMove: (e: React.PointerEvent<HTMLDivElement>) => void
 	readonly onPointerUp: (e: React.PointerEvent<HTMLDivElement>) => void
 	readonly onPointerCancel: () => void
+	readonly onContextMenu: (e: React.MouseEvent<HTMLDivElement>) => void
 }
 
 export function useParagraphPress(opts: {
@@ -32,6 +40,9 @@ export function useParagraphPress(opts: {
 	readonly onCommentBadgeTap: (paragraphIndex: number) => void
 	readonly onTapBack: () => void
 	readonly onTapForward: () => void
+	/** When provided, the middle third of a tap toggles this instead of
+	    paging. Absent keeps the old left/right half-split. */
+	readonly onTapCenter?: () => void
 }): ParagraphPressHandlers {
 	const {
 		containerRef,
@@ -39,6 +50,7 @@ export function useParagraphPress(opts: {
 		onCommentBadgeTap,
 		onTapBack,
 		onTapForward,
+		onTapCenter,
 	} = opts
 	const pressRef = useRef<PressTracker | undefined>(undefined)
 
@@ -58,12 +70,18 @@ export function useParagraphPress(opts: {
 			const target = e.target
 			if (!(target instanceof HTMLElement)) return
 			const { tappedBadge, paragraphIndex } = resolvePressTarget(target)
-			const timer = window.setTimeout(function fire() {
-				const tracker = pressRef.current
-				if (tracker === undefined || tracker.tappedBadge) return
-				tracker.fired = true
-				if (tracker.paragraph >= 0) onLongPress(tracker.paragraph)
-			}, LONG_PRESS_MS)
+			// Long press opens the comment dialog during the hold on
+			// touch/pen; mouse uses right-click (onContextMenu) instead so
+			// text selection and paging stay free.
+			let timer = 0
+			if (e.pointerType !== "mouse") {
+				timer = window.setTimeout(function fire() {
+					const tracker = pressRef.current
+					if (tracker === undefined || tracker.tappedBadge) return
+					tracker.fired = true
+					if (tracker.paragraph >= 0) onLongPress(tracker.paragraph)
+				}, LONG_PRESS_MS)
+			}
 			pressRef.current = {
 				x: e.clientX,
 				y: e.clientY,
@@ -100,17 +118,89 @@ export function useParagraphPress(opts: {
 			const root = containerRef.current
 			if (root === null) return
 			const rect = root.getBoundingClientRect()
-			if (e.clientX - rect.left < rect.width / 2) onTapBack()
-			else onTapForward()
+			const rel = rect.width > 0 ? (e.clientX - rect.left) / rect.width : 0
+			const action = resolveTapAction(rel, onTapCenter !== undefined)
+			if (action === "back") onTapBack()
+			else if (action === "forward") onTapForward()
+			else onTapCenter?.()
 		},
-		[clearPress, containerRef, onCommentBadgeTap, onTapBack, onTapForward],
+		[
+			clearPress,
+			containerRef,
+			onCommentBadgeTap,
+			onTapBack,
+			onTapForward,
+			onTapCenter,
+		],
 	)
 
 	const onPointerCancel = useCallback(() => {
 		clearPress()
 	}, [clearPress])
 
-	return { onPointerDown, onPointerMove, onPointerUp, onPointerCancel }
+	// Desktop entry point for the comment dialog: right-click a paragraph.
+	// preventDefault blocks the native menu so the reader owns the gesture,
+	// and the desktop long-press timer is deliberately not armed above. The
+	// whole paragraph is selected so the user sees exactly which block the
+	// comment targets (and can copy it with Ctrl+C).
+	const onContextMenu = useCallback(
+		(e: React.MouseEvent<HTMLDivElement>) => {
+			const target = e.target
+			if (!(target instanceof HTMLElement)) return
+			const paragraphEl = target.closest("[data-pidx]")
+			if (!(paragraphEl instanceof HTMLElement)) return
+			const paragraphIndex = Number(paragraphEl.dataset.pidx)
+			if (Number.isNaN(paragraphIndex)) return
+			e.preventDefault()
+			selectParagraphContents(paragraphEl)
+			onLongPress(paragraphIndex)
+		},
+		[onLongPress],
+	)
+
+	return {
+		onPointerDown,
+		onPointerMove,
+		onPointerUp,
+		onPointerCancel,
+		onContextMenu,
+	}
+}
+
+/**
+ * Select a paragraph's text (excluding its trailing comment badge) so the
+ * whole block is highlighted — feedback for "which sentence am I commenting
+ * on" — and remains copyable.
+ */
+function selectParagraphContents(el: HTMLElement): void {
+	const range = document.createRange()
+	const badge = el.querySelector("[data-novel-comment-badge]")
+	if (badge !== null) {
+		range.setStart(el, 0)
+		range.setEnd(badge, 0)
+	} else {
+		range.selectNodeContents(el)
+	}
+	const selection = window.getSelection()
+	if (selection !== null) {
+		selection.removeAllRanges()
+		selection.addRange(range)
+	}
+}
+
+/**
+ * Horizontal tap zone for a container-relative X fraction. Without a wired
+ * center action (desktop) the surface splits at half; with one (mobile)
+ * the middle third toggles the chrome and the outer thirds page.
+ */
+export function resolveTapAction(
+	rel: number,
+	hasCenter: boolean,
+): "back" | "forward" | "center" {
+	if (!hasCenter) return rel < 0.5 ? "back" : "forward"
+	if (rel < CENTER_ZONE_START) return "back"
+	if (rel > CENTER_ZONE_END) return "forward"
+	return "center"
 }
 
 /** What the press gesture should mean for the element that received it. */

@@ -8,3 +8,18 @@
 	padding: 0;
 	overflow: hidden;
 }
+
+/* Reading content: chapter-heading vertical rhythm. The heading's margin
+   lives here (not in the inline paragraph style) so it can shrink on
+   narrow viewports without touching the multi-column geometry. */
+.novel-chapter-heading {
+	margin-top: 1em;
+	margin-bottom: 1em;
+}
+
+@media (width < 48rem) {
+	.novel-chapter-heading {
+		margin-top: 0.5em;
+		margin-bottom: 0.5em;
+	}
+}

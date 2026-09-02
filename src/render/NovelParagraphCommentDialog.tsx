@@ -1,5 +1,6 @@
 import type { Message } from "@hoardodile/sdk-web"
 import { AppDialog } from "@hoardodile/ui/components/app-dialog"
+import { Button } from "@hoardodile/ui/components/button"
 import { useTranslation } from "../i18n"
 import { CommentComposer } from "./CommentComposer"
 import { usePluginAPI } from "./hooks"
@@ -44,6 +45,11 @@ export function NovelParagraphCommentDialog(props: {
 			title={title}
 			contentClassName="sm:max-w-lg"
 			contentTestId="novel-paragraph-comment-dialog"
+			footer={
+				<Button type="button" variant="secondary" onClick={onClose}>
+					{t("cancel")}
+				</Button>
+			}
 		>
 			<div className="flex flex-col gap-3">
 				{comments.length === 0 ? (
@@ -62,13 +68,11 @@ export function NovelParagraphCommentDialog(props: {
 						})}
 					</ul>
 				)}
-				<div className="border-t pt-3">
-					<CommentComposer
-						onSubmit={handleSubmit}
-						isPending={createMessage.isPending}
-						placeholder={t("commentPlaceholder")}
-					/>
-				</div>
+				<CommentComposer
+					onSubmit={handleSubmit}
+					isPending={createMessage.isPending}
+					placeholder={t("commentPlaceholder")}
+				/>
 			</div>
 		</AppDialog>
 	)

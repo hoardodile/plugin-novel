@@ -1,12 +1,11 @@
 import { MAX_COMMENT_BODY_LENGTH } from "@hoardodile/sdk-types/text-limits"
 
+import { DialogFooterActions } from "@hoardodile/ui/components/app-dialog"
 import { Button } from "@hoardodile/ui/components/button"
-import { Icon } from "@hoardodile/ui/components/icon"
 import { Textarea } from "@hoardodile/ui/components/textarea"
 import type { ReactNode } from "react"
 import { useState } from "react"
 import { useTranslation } from "../i18n"
-import { Plane } from "../icons"
 
 export type CommentComposerProps = {
 	/**
@@ -27,8 +26,10 @@ export type CommentComposerProps = {
 }
 
 /**
- * Generic comment composer. Accepts `onSubmit` as the sole mutation
- * contract — the caller wraps create, invalidation, and toast.
+ * Generic comment composer inside a dialog. Renders the textarea and
+ * contributes its submit button to the surrounding dialog's footer action
+ * area (via {@link DialogFooterActions}) — no inline submit row and no
+ * icon. Outside a dialog the footer contribution is a no-op.
  */
 export function CommentComposer(props: CommentComposerProps) {
 	const { t } = useTranslation()
@@ -60,19 +61,17 @@ export function CommentComposer(props: CommentComposerProps) {
 				className="min-h-24 resize-y bg-background"
 			/>
 			{props.pickerSlot}
-			<div className="flex items-center justify-end gap-2">
+			<DialogFooterActions>
 				<Button
 					type="button"
-					size="sm"
 					onClick={submit}
 					disabled={isPending || body.trim().length === 0}
 				>
-					<Icon icon={Plane} className="mr-1" />
 					{isPending
 						? (props.pendingLabel ?? t("submitting"))
 						: (props.submitLabel ?? t("submit"))}
 				</Button>
-			</div>
+			</DialogFooterActions>
 		</div>
 	)
 }
