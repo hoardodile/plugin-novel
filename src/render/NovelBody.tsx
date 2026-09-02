@@ -66,7 +66,7 @@ export function NovelBody(props: NovelBodyProps) {
 		[document.paragraphs],
 	)
 
-	const { chunkIdx, pageSize, goPrev, goNext } = useNovelPagination({
+	const { chunkIdx, pageSize, flowWidth, goPrev, goNext } = useNovelPagination({
 		containerRef,
 		chunkIndex,
 		settings,
@@ -116,7 +116,7 @@ export function NovelBody(props: NovelBodyProps) {
 			onPointerCancel={pressHandlers.onPointerCancel}
 			onContextMenu={pressHandlers.onContextMenu}
 		>
-			<div style={columnFlowStyle(pageSize, { compact })}>
+			<div style={columnFlowStyle(pageSize, { compact, flowWidth })}>
 				{activeChunk?.paragraphs.map(function renderParagraph(p) {
 					return (
 						<NovelParagraphView

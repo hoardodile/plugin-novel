@@ -52,6 +52,13 @@ export type NovelPaginationOptions = {
 export type NovelPagination = {
 	readonly chunkIdx: number
 	readonly pageSize: { readonly width: number; readonly height: number }
+	/**
+	 * Total pixel width of this chunk's column flow: `pagesInChunk ·
+	 * pageWidth`. Fed to `columnFlowStyle` so the multi-column element spans
+	 * the full page span and the last page is not clamped short (see
+	 * `columnFlowStyle`).
+	 */
+	readonly flowWidth: number
 	readonly goPrev: () => void
 	readonly goNext: () => void
 }
@@ -334,7 +341,16 @@ export function useNovelPagination(
 		[scrollToPage, onScrollToPageHandled],
 	)
 
-	return { chunkIdx, pageSize, goPrev, goNext }
+	const flowWidth = useMemo(
+		function flowWidth() {
+			const w = pageSize.width
+			if (w <= 0) return 0
+			return (pagesByChunk.get(chunkIdx) ?? 1) * w
+		},
+		[pageSize.width, pagesByChunk, chunkIdx],
+	)
+
+	return { chunkIdx, pageSize, flowWidth, goPrev, goNext }
 }
 
 /** Live container dimensions; one page equals one container width. */

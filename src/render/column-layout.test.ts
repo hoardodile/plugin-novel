@@ -309,4 +309,32 @@ describe("columnFlowStyle", () => {
 	it("collapses to a plain full-height box before the first layout", () => {
 		expect(columnFlowStyle({ width: 0, height: 0 })).toEqual({ height: "100%" })
 	})
+
+	it("spans the full page span so the last page is not clamped short", () => {
+		const style = columnFlowStyle(
+			{ width: 400, height: 800 },
+			{ flowWidth: 1600 },
+		)
+		// The element is explicitly sized to the whole `pagesInChunk · pageWidth`
+		// span so `scrollWidth` is exactly that, letting the last page scroll to
+		// its symmetric inset. Column pitch geometry is unchanged.
+		expect(style.width).toBe("1600px")
+		expect(style.columnWidth).toBe("336px")
+		expect(style.columnGap).toBe("64px")
+		expect(style.paddingLeft).toBe("32px")
+		expect(style.paddingRight).toBe("32px")
+		expect(style.height).toBe("800px")
+	})
+
+	it("leaves width unset (auto) when flowWidth is omitted", () => {
+		const style = columnFlowStyle({ width: 400, height: 800 })
+		expect(style.width).toBeUndefined()
+		expect(style.columnWidth).toBe("336px")
+	})
+
+	it("ignores a non-positive flowWidth", () => {
+		expect(
+			columnFlowStyle({ width: 400, height: 800 }, { flowWidth: 0 }).width,
+		).toBeUndefined()
+	})
 })

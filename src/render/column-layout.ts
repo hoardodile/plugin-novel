@@ -81,7 +81,7 @@ export type PendingChunkTarget =
  */
 export function columnFlowStyle(
 	pageSize: { readonly width: number; readonly height: number },
-	opts: { readonly compact?: boolean } = {},
+	opts: { readonly compact?: boolean; readonly flowWidth?: number } = {},
 ): CSSProperties {
 	const side = opts.compact ? COLUMN_COMPACT_SIDE_PADDING : COLUMN_SIDE_PADDING
 	const top = opts.compact ? COLUMN_COMPACT_TOP_PADDING : COLUMN_TOP_PADDING
@@ -89,7 +89,7 @@ export function columnFlowStyle(
 		? COLUMN_COMPACT_BOTTOM_PADDING
 		: COLUMN_BOTTOM_PADDING
 	if (pageSize.width <= 0) return { height: "100%" }
-	return {
+	const style: CSSProperties = {
 		height: `${pageSize.height}px`,
 		columnWidth: `${Math.max(1, pageSize.width - 2 * side)}px`,
 		columnGap: `${2 * side}px`,
@@ -100,6 +100,18 @@ export function columnFlowStyle(
 		paddingRight: `${side}px`,
 		boxSizing: "border-box",
 	}
+	// By default the element is one viewport wide and the remaining columns
+	// overflow it, so the browser computes `scrollWidth = N·pageWidth − side`
+	// (the trailing `side` padding is trimmed from the scrollable extent). That
+	// clamps the last page's `scrollLeft` short by `side` and pushes the last
+	// column to `2·side` from the left. Spanning the element to the full page
+	// span makes `scrollWidth = N·pageWidth`, so `maxScroll = (N−1)·pageWidth`
+	// and the last page reaches its symmetric `side` inset. Column pitch math is
+	// untouched — `flowWidth` is `pagesInChunk · pageWidth`.
+	if (opts.flowWidth !== undefined && opts.flowWidth > 0) {
+		style.width = `${opts.flowWidth}px`
+	}
+	return style
 }
 
 /** Number of viewport pages the measured column flow spans. */
