@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.2.0](https://github.com/hoardodile/plugin-novel/compare/v0.1.6...v0.2.0) (2026-09-02)
+
+### Features
+
+* **reader:** theme system, scroll mode, and redesigned chrome ([72fbb2a](https://github.com/hoardodile/plugin-novel/commit/72fbb2a7939105bd166a763da666489560df84ec))
+
+### Bug Fixes
+
+* **reader:** span the paged flow to the full page count so the last page is not clamped ([20ddcdd](https://github.com/hoardodile/plugin-novel/commit/20ddcdd7c41d3f4134af7843963a2bc45bf99d8f))
+
 ## [0.1.6](https://github.com/hoardodile/plugin-novel/compare/v0.1.5...v0.1.6) (2026-09-01)
 
 ### Features
