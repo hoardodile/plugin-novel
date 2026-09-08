@@ -1,5 +1,7 @@
 # Changelog
 
+## [0.2.1](https://github.com/hoardodile/plugin-novel/compare/v0.2.0...v0.2.1) (2026-09-08)
+
 ## [0.2.0](https://github.com/hoardodile/plugin-novel/compare/v0.1.6...v0.2.0) (2026-09-02)
 
 ### Features
